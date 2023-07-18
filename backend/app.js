@@ -15,16 +15,23 @@ const app= express() //permet de créer appliation express
 
 app.use(express.json());
 
+//Gérer les erreurs CORS
 app.use((req, res, next) => {
-    res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content, Accept, Content-Type, Authorization');
-    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
+    res.setHeader("Access-Control-Allow-Origin", "*");
+    res.setHeader(
+      "Access-Control-Allow-Headers",
+      "Origin, X-Requested-With, Content, Accept, Content-Type, Authorization"
+    );
+    res.setHeader(
+      "Access-Control-Allow-Methods",
+      "GET, POST, PUT, DELETE, PATCH, OPTIONS"
+    );
     next();
-  });
+});
 
 app.use(bodyParser.json());
 
-app.use('/api/books',booksRoutes); //ie pour cette route-là, on utilise router exposé par booksRoutes
+app.use('/api/books',booksRoutes); 
 app.use('/api/auth',userRoutes);
 app.use('/images',express.static(path.join(__dirname,'images')));
 
