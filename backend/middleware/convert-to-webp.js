@@ -13,8 +13,10 @@ const convertImageToWebP = (req, res, next) => {
                 if (err) {
                     console.error('Erreur lors de la conversion à WebP:', err);
                 }
+                req.file.webp=req.file.filename +'.webp'
                 next();
             });
+            console.log(req.file);
     } else {
         next();
     }

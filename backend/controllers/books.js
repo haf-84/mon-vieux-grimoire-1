@@ -29,53 +29,51 @@ exports.getOneBook= (req, res, next)=>{
     .catch(error => res.status(404).json({error}));
 };
 
-exports.addRating=(req, res, next)=>{
+exports.addRating = (req, res, next) => {
     Book.findOne({ _id: req.params.id })
-    .then(async book => {
-      const user = req.body.userId;
-
-      if (user !== req.auth.userId) {
-        return res
-          .status(403)
-          .json({ error: "Vous ne pouvez pas voter pour ce livre." });
-      }
-
-      const newRatingObject = {
-        userId: req.auth.userId,
-        grade: req.body.rating,
-        _id: req.body._id,
-      };
-
-      if (book.ratings.some(rating => rating.userId === req.auth.userId)) {
-        return res
-          .status(403)
-          .json({ error: "Vous avez déjà voté pour ce livre." });
-      } else {
-        book.ratings.push(newRatingObject);
-        const allRatings = book.ratings.map(rating => rating.grade);
-        const newAverageRating = (
-          allRatings.reduce((acc, curr) => acc + curr, 0) / allRatings.length
-        ).toFixed(1);
-
-        try {
-          await Book.updateOne(
+      .then(book => {
+        const user = req.body.userId;
+  
+        if (user !== req.auth.userId) {
+          return res
+            .status(403)
+            .json({ error: "Vous ne pouvez pas voter pour ce livre." });
+        }
+  
+        const newRatingObject = {
+          userId: req.auth.userId,
+          grade: req.body.rating
+        };
+  
+        if (book.ratings.some(rating => rating.userId === req.auth.userId)) {
+          return res
+            .status(403)
+            .json({ error: "Vous avez déjà voté pour ce livre." });
+        } else {
+          book.ratings.push(newRatingObject);
+          const allRatings = book.ratings.map(rating => rating.grade);
+          const newAverageRating = (
+            allRatings.reduce((acc, curr) => acc + curr, 0) / allRatings.length
+          ).toFixed(1);
+  
+          return Book.updateOne(
             { _id: req.params.id },
             { ratings: book.ratings, averageRating: newAverageRating },
             { new: true }
           );
-
-          const updatedBook = await Book.findOne({ _id: req.params.id });
-          return res.status(200).json(updatedBook);
-        } catch (error) {
-          throw error;
         }
-      }
-    })
-    .catch(error => {
-      return res.status(500).json({ error });
-    });
-};
-  
+      })
+      .then(() => {
+        return Book.findOne({ _id: req.params.id });
+      })
+      .then(updatedBook => {
+        return res.status(200).json(updatedBook);
+      })
+      .catch(error => {
+        return res.status(500).json({ error });
+      });
+  };
+    
 exports.deleteBook = (req, res, next) => {
 Book.findOne({ _id: req.params.id }).then(book => {
     if (book.userId != req.auth.userId) {
@@ -103,7 +101,7 @@ exports.createBook = (req, res, next) => {
         ...bookObject,
         userId: req.auth.userId,
         // on génère l'url de l'image
-        imageUrl: `${req.protocol}://${req.get('host')}/images/${req.file.filename}`
+        imageUrl: `${req.protocol}://${req.get('host')}/images/${req.file.webp}`
     });
     // sauvgarde du nouveau livre dans la base de données 
     book.save()
